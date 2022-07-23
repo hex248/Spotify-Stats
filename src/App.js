@@ -5,7 +5,6 @@ import axios from "axios";
 
 const CLIENT_ID = "4bbbacdfdbd84049b16cdc4a4ad94260";
 const SPOTIFY_AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
-const REDIRECT_URI_AFTER_LOGIN = "http://localhost:3000/";
 const SCOPES = ["user-read-recently-played", "user-read-playback-state", "user-top-read", "user-read-currently-playing"];
 const SCOPES_URI_PARAM = SCOPES.join("%20"); // connect scopes with spaces for use in url params
 
@@ -23,7 +22,7 @@ const getParams = (hash) => {
 
 function App() {
     const handleLogin = () => {
-        window.location = `${SPOTIFY_AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI_AFTER_LOGIN}&scope=${SCOPES_URI_PARAM}&response_type=token&show_dialog=true`;
+        window.location = `${SPOTIFY_AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${window.location}&scope=${SCOPES_URI_PARAM}&response_type=token&show_dialog=true`;
     };
 
     useEffect(() => {
