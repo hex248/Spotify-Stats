@@ -18,3 +18,21 @@ body {
     background-color: #071407;
     color: white;
 }
+
+.tracksContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 50%;
+    position: absolute;
+    left: 25%;
+}
+
+.track {
+    font-size: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 15vw;
+}
