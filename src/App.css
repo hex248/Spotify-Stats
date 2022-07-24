@@ -5,18 +5,15 @@
     text-align: center;
 }
 
-.App-header {
-    background-color: #071407;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
+:root {
+    --background-color: #071407;
+    --foreground-color: #ffffff;
+    --fade-time: 0.3s;
 }
 
 body {
-    background-color: #071407;
-    color: white;
+    background-color: var(--background-color);
+    color: var(--foreground-color);
 }
 
 .tracksContainer {
@@ -24,9 +21,9 @@ body {
     flex-direction: row;
     justify-content: center;
     flex-wrap: wrap;
-    width: 50vw;
+    width: 75vw;
     position: absolute;
-    left: 25%;
+    left: 12.5%;
 }
 
 .track {
@@ -35,4 +32,31 @@ body {
     display: flex;
     flex-direction: column;
     width: 25%;
+}
+
+a {
+    text-decoration: none;
+    color: var(--foreground-color);
+    background-color: var(--background-color);
+    -moz-transition: all var(--fade-time) ease-in;
+    -o-transition: all var(--fade-time) ease-in;
+    -webkit-transition: all var(--fade-time) ease-in;
+    transition: all var(--fade-time) ease-in;
+    font-size: calc(5px + 2vmin);
+    padding: 15px;
+}
+
+a:hover {
+    color: var(--background-color);
+    background-color: var(--foreground-color);
+}
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
 }

@@ -62,7 +62,7 @@ function App() {
 
     return (
         <div className="App">
-            <header className="App-header">
+            <header className="App-header noselect">
                 <h1>spotify stats</h1>
             </header>
             {!localStorage.getItem("access_token") ? <button onClick={handleLogin}>login to spotify</button> : null}
@@ -71,9 +71,9 @@ function App() {
                     {shortTermTracks.map((track, i) => (
                         <div className="track" key={i + track.name + " - " + track.artists[0].name}>
                             <img src={track.album.images[0].url} />
-                            <h1>
+                            <a href={track.external_urls.spotify} target="_blank">
                                 {i + 1}. {track.name} - {track.artists[0].name}
-                            </h1>
+                            </a>
                         </div>
                     ))}
                 </div>
