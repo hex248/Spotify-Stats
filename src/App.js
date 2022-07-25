@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./App.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -37,6 +36,45 @@ function App() {
     const [mediumTermTracks, setMediumTermTracks] = useState([]);
     const [longTermTracks, setLongTermTracks] = useState([]);
 
+    useEffect(() => {
+        if (window.location.hash) {
+            const { access_token, expires_in, token_type } = getParams(window.location.hash);
+            localStorage.setItem("access_token", access_token);
+            localStorage.setItem("expires_in", expires_in);
+            localStorage.setItem("token_type", token_type);
+
+            // remove hash from url
+            window.location = "/";
+        } else {
+            if (localStorage.getItem("access_token") && !fetched) {
+                fetchData();
+            }
+        }
+        if (localStorage.getItem("access_token")) {
+            // check if user can be fetched using token
+
+            axios
+                .get(`https://api.spotify.com/v1/me/`, {
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("access_token"),
+                    },
+                })
+                .then((res) => {
+                    console.log(res);
+                })
+                .catch((err) => {
+                    console.log(err);
+                    if (err.code === "ERR_BAD_REQUEST") {
+                        // ask to login again
+                        if (!window.location.hash) {
+                            localStorage.clear();
+                            window.location = "/";
+                        }
+                    }
+                });
+        }
+    });
+
     const fetchData = () => {
         let tempData = {
             artists: {
@@ -61,7 +99,7 @@ function App() {
                     })
                     .then((res) => {
                         tempData[key][childKey] = res.data.items;
-                        if (key == "artists") {
+                        if (key === "artists") {
                             switch (childKey) {
                                 case "short_term":
                                     setShortTermArtists(res.data.items);
@@ -72,8 +110,10 @@ function App() {
                                 case "long_term":
                                     setLongTermArtists(res.data.items);
                                     break;
+                                default:
+                                    break;
                             }
-                        } else if (key == "tracks") {
+                        } else if (key === "tracks") {
                             switch (childKey) {
                                 case "short_term":
                                     setShortTermTracks(res.data.items);
@@ -84,12 +124,14 @@ function App() {
                                 case "long_term":
                                     setLongTermTracks(res.data.items);
                                     break;
+                                default:
+                                    break;
                             }
                         }
                     })
                     .catch((err) => {
                         console.log(err);
-                        if (err.code == "ERR_BAD_REQUEST") {
+                        if (err.code === "ERR_BAD_REQUEST") {
                             // ask to login again
                             localStorage.clear();
                         }
@@ -103,66 +145,50 @@ function App() {
         setFetched(true);
     };
 
-    useEffect(() => {
-        if (window.location.hash) {
-            const { access_token, expires_in, token_type } = getParams(window.location.hash);
-            localStorage.setItem("access_token", access_token);
-            localStorage.setItem("expires_in", expires_in);
-            localStorage.setItem("token_type", token_type);
-
-            // remove hash from url
-            window.location = "/";
-        } else {
-            if (localStorage.getItem("access_token") && !fetched) {
-                fetchData();
-            }
-        }
-    }, []);
-
     const changeCategory = (eventData) => {
         const request = eventData.target.innerHTML.toLowerCase();
         if (["artists", "tracks"].includes(request)) {
-            if (request != category) {
+            if (request !== category) {
                 setCategory(request);
                 setTimeRange("short_term");
             }
-        } else if (request == "last month") {
+        } else if (request === "last month") {
             setTimeRange("short_term");
-        } else if (request == "last 6 months") {
+        } else if (request === "last 6 months") {
             setTimeRange("medium_term");
-        } else if (request == "all time") {
+        } else if (request === "all time") {
             setTimeRange("long_term");
         }
     };
 
     const CategorySelection = () => {
         let displayStr = `Your top ${category} of`;
-        if (timeRange == "short_term") {
+        if (timeRange === "short_term") {
             displayStr += " the last month";
-        } else if (timeRange == "medium_term") {
+        } else if (timeRange === "medium_term") {
             displayStr += " the last 6 months";
-        } else if (timeRange == "long_term") {
+        } else if (timeRange === "long_term") {
             displayStr += " all time";
         }
 
         return (
             <div className="buttons">
                 <div className="buttonContainer">
-                    <button onClick={changeCategory} className="selection transition-1ms">
+                    <button onClick={changeCategory} className="selection transition-0-3ms">
                         Tracks
                     </button>
-                    <button onClick={changeCategory} className="selection transition-1ms">
+                    <button onClick={changeCategory} className="selection transition-0-3ms">
                         Artists
                     </button>
                 </div>
                 <div className="buttonContainer">
-                    <button onClick={changeCategory} className="selection transition-1ms">
+                    <button onClick={changeCategory} className="selection transition-0-3ms">
                         Last month
                     </button>
-                    <button onClick={changeCategory} className="selection transition-1ms">
+                    <button onClick={changeCategory} className="selection transition-0-3ms">
                         Last 6 months
                     </button>
-                    <button onClick={changeCategory} className="selection transition-1ms">
+                    <button onClick={changeCategory} className="selection transition-0-3ms">
                         All time
                     </button>
                 </div>
@@ -176,7 +202,7 @@ function App() {
             return <Loading />;
         } else if (fetched && localStorage.getItem("access_token")) {
             let list = [];
-            if (category == "artists") {
+            if (category === "artists") {
                 switch (timeRange) {
                     case "short_term":
                         list = shortTermArtists;
@@ -187,15 +213,18 @@ function App() {
                     case "long_term":
                         list = longTermArtists;
                         break;
+                    default:
+                        list = shortTermArtists;
+                        break;
                 }
                 return (
                     <>
                         <CategorySelection />
                         <div className="container">
                             {list.map((artist, i) => (
-                                <div className="artist transition-1ms" key={i + artist.name}>
-                                    <img src={artist.images[1].url} className="artistImg transition-1ms" />
-                                    <a href={artist.external_urls.spotify} className="link transition-1ms" target="_blank">
+                                <div className="artist transition-0-3ms" key={i + artist.name}>
+                                    <img src={artist.images[1].url} className="artistImg transition-0-3ms" alt={""} />
+                                    <a href={artist.external_urls.spotify} className="link transition-0-3ms" target="_blank" rel="noreferrer">
                                         {i + 1}. {artist.name}
                                         <br />({artist.genres.join(", ")})
                                     </a>
@@ -204,7 +233,7 @@ function App() {
                         </div>
                     </>
                 );
-            } else if (category == "tracks") {
+            } else if (category === "tracks") {
                 switch (timeRange) {
                     case "short_term":
                         list = shortTermTracks;
@@ -215,16 +244,19 @@ function App() {
                     case "long_term":
                         list = longTermTracks;
                         break;
+                    default:
+                        list = shortTermTracks;
+                        break;
                 }
                 return (
                     <>
                         <CategorySelection />
                         <div className="container">
                             {list.map((track, i) => (
-                                <div className="track transition-1ms" key={i + track.name + " - " + track.artists[0].name}>
-                                    <img src={track.album.images[1].url} className="trackImg transition-1ms" />
+                                <div className="track transition-0-3ms" key={i + track.name + " - " + track.artists[0].name}>
+                                    <img src={track.album.images[1].url} className="trackImg transition-0-3ms" alt={""} />
 
-                                    <a href={track.external_urls.spotify} className="link transition-1ms" target="_blank">
+                                    <a href={track.external_urls.spotify} className="link transition-0-3ms" target="_blank" rel="noreferrer">
                                         {i + 1}. {track.name} - {track.artists[0].name}
                                     </a>
                                 </div>
@@ -244,7 +276,11 @@ function App() {
                 <h1>Spotify Stats</h1>
             </header>
             <div className="Main">
-                {!localStorage.getItem("access_token") ? <button onClick={handleLogin}>Login</button> : null}
+                {!localStorage.getItem("access_token") ? (
+                    <button className="loginButton transition-0-1ms" onClick={handleLogin}>
+                        Login
+                    </button>
+                ) : null}
                 <List />
             </div>
         </div>
