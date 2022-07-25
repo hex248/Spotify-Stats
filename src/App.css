@@ -163,6 +163,21 @@ body {
                                     supported by Chrome, Edge, Opera and Firefox */
 }
 
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: var(--foreground-color);
+    border-radius: 10px;
+    border: 0px double var(--foreground-color);
+}
+
 .transition-0-3ms {
     -moz-transition: all var(--fade-time) ease-in;
     -o-transition: all var(--fade-time) ease-in;
