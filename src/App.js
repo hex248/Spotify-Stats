@@ -35,6 +35,10 @@ function App() {
     const [mediumTermTracks, setMediumTermTracks] = useState([]);
     const [longTermTracks, setLongTermTracks] = useState([]);
 
+    const [images, setImages] = useState([]);
+    const [icons, setIcons] = useState([]);
+    const [imagesReady, setImagesReady] = useState(null);
+
     useEffect(() => {
         if (window.location.hash) {
             const { access_token, expires_in, token_type } = getParams(window.location.hash);
@@ -72,8 +76,6 @@ function App() {
         }
     });
 
-    const [images, setImages] = useState([]);
-    const [icons, setIcons] = useState([]);
     useEffect(() => {
         let song = new Image();
         song.src = "icons/song.png";
@@ -83,6 +85,8 @@ function App() {
         album.src = "icons/disc.png";
 
         setIcons([song, artist, album]);
+
+        setImagesReady(false);
     }, []);
 
     const fetchData = () => {
@@ -99,8 +103,6 @@ function App() {
             },
         };
 
-        localStorage.setItem("base64Extracted", false);
-        localStorage.setItem("imagesReady", false);
         for (let key of Object.keys(tempData)) {
             for (let childKey of Object.keys(tempData[key])) {
                 axios
@@ -136,18 +138,12 @@ function App() {
                                             .then((blob) => {
                                                 const reader = new FileReader();
                                                 reader.onloadend = () => {
-                                                    console.log(individualNum);
-                                                    localStorage.setItem(`b64:${individualNum}`, reader.result);
                                                     let img = new Image();
                                                     img.src = reader.result;
                                                     let tempImgs = images;
-                                                    tempImgs.push(img);
+                                                    tempImgs.push({ img: img, id: parseInt(individualNum) });
                                                     setImages(tempImgs);
-                                                    if (images.length == 10) localStorage.setItem("imagesReady", true);
-                                                    console.log(images);
-                                                    if (individualNum === "9") {
-                                                        localStorage.setItem("base64Extracted", true);
-                                                    }
+                                                    if (images.length >= 10) setImagesReady(true);
                                                 };
                                                 reader.readAsDataURL(blob);
                                             });
@@ -175,7 +171,7 @@ function App() {
         }
 
         let allData = [tempData.artists.short_term, tempData.artists.medium_term, tempData.artists.long_term, tempData.tracks.short_term, tempData.tracks.medium_term, tempData.tracks.long_term];
-        while (allData.includes([]) || !localStorage.getItem("base64Extracted")) {
+        while (allData.includes([])) {
             allData = [tempData.artists.short_term, tempData.artists.medium_term, tempData.artists.long_term, tempData.tracks.short_term, tempData.tracks.medium_term, tempData.tracks.long_term];
         }
         setFetched(true);
@@ -342,8 +338,8 @@ function App() {
             ctx.fillStyle = "#042230";
             ctx.roundRect(135, i * imageSize + 20 * (i + 1) - 5, imageSize + 10, imageSize + 10, 5).fill();
 
-            let img = images[i];
-            ctx.drawImage(img, 140, i * imageSize + 20 * (i + 1), imageSize, imageSize);
+            let img = images.find((image) => image.id === i);
+            ctx.drawImage(img.img, 140, i * imageSize + 20 * (i + 1), imageSize, imageSize);
 
             ctx.fillStyle = "#000000";
 
@@ -426,7 +422,7 @@ function App() {
             <br />
             <br />
 
-            {localStorage.getItem("imagesReady") ? (
+            {imagesReady ? (
                 <button className="generateButton transition-0-1ms" onClick={GenerateImage}>
                     Generate Image
                 </button>
