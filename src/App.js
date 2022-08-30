@@ -258,7 +258,7 @@ function App() {
                                     <img src={artist.images[1].url} className="artistImg transition-0-3ms" alt={""} />
                                     <a href={artist.external_urls.spotify} className="link transition-0-3ms" target="_blank" rel="noreferrer">
                                         {i + 1}. {artist.name}
-                                        <br />({artist.genres.join(", ")})
+                                        <br />
                                     </a>
                                 </div>
                             ))}
@@ -327,12 +327,13 @@ function App() {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         ctx.canvas.width = 1500;
-        ctx.canvas.height = 2220;
+        ctx.canvas.height = 2350;
 
-        ctx.fillStyle = "#c1d1d9";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#C3B1E1";
+        ctx.roundRect(0, 0, canvas.width, canvas.height, 30).fill();
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
         let imageSize = 200;
-        let maxTextWidth = 1100;
+        let maxTextWidth = 1070;
 
         for (let i = 0; i < 10; i++) {
             ctx.fillStyle = "#042230";
@@ -395,15 +396,24 @@ function App() {
             ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + 75);
         }
 
-        ctx.font = "normal normal 800 45px Montserrat"; // set font
-        ctx.fillText("oliverbryan.com :)", 1055, 2200);
+        ctx.font = "normal normal 800 80px Montserrat"; // set font
+        let txt = "oliverbryan.com :)";
+        ctx.fillText(txt, ctx.canvas.width / 2 - ctx.measureText(txt).width / 2, 2305);
 
         var link = document.createElement("a");
         link.download = "month.png";
         link.href = canvas.toDataURL();
         // link.click();
 
+        setShowCanvas(true);
         document.getElementById("canvasDisplay").src = canvas.toDataURL();
+    };
+
+    const [showCanvas, setShowCanvas] = useState(null);
+
+    const HideImage = () => {
+        setShowCanvas(false);
+        document.getElementById("canvasDisplay").src = "";
     };
 
     return (
@@ -411,6 +421,23 @@ function App() {
             <header className="App-header noselect">
                 <h1>Spotify Stats</h1>
             </header>
+            {imagesReady && !showCanvas ? (
+                <button className="generateButton transition-0-1ms" onClick={GenerateImage}>
+                    Show Image
+                </button>
+            ) : null}
+
+            {imagesReady && showCanvas ? (
+                <button className="hideButton transition-0-1ms" onClick={HideImage}>
+                    Hide Image
+                </button>
+            ) : null}
+            <br />
+            <br />
+            <div className="imageContainer">
+                <canvas ref={canvasRef} id={"canvas"} />
+                <img id="canvasDisplay" src="" />
+            </div>
             <div className="Main">
                 {!localStorage.getItem("access_token") ? (
                     <button className="loginButton transition-0-1ms" onClick={handleLogin}>
@@ -421,16 +448,6 @@ function App() {
             </div>
             <br />
             <br />
-
-            {imagesReady ? (
-                <button className="generateButton transition-0-1ms" onClick={GenerateImage}>
-                    Generate Image
-                </button>
-            ) : null}
-            <br />
-            <br />
-            <canvas ref={canvasRef} id={"canvas"} />
-            <img id="canvasDisplay" src="" />
         </div>
     );
 }
