@@ -157,6 +157,11 @@ body {
 canvas {
     position: relative;
     max-width: 90%;
+    width: 0%;
+}
+
+#canvasDisplay {
+    width: 80%;
 }
 
 .selection {

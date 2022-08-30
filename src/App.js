@@ -72,6 +72,19 @@ function App() {
         }
     });
 
+    const [images, setImages] = useState([]);
+    const [icons, setIcons] = useState([]);
+    useEffect(() => {
+        let song = new Image();
+        song.src = "icons/song.png";
+        let artist = new Image();
+        artist.src = "icons/person.png";
+        let album = new Image();
+        album.src = "icons/disc.png";
+
+        setIcons([song, artist, album]);
+    }, []);
+
     const fetchData = () => {
         let tempData = {
             artists: {
@@ -86,6 +99,8 @@ function App() {
             },
         };
 
+        localStorage.setItem("base64Extracted", false);
+        localStorage.setItem("imagesReady", false);
         for (let key of Object.keys(tempData)) {
             for (let childKey of Object.keys(tempData[key])) {
                 axios
@@ -114,6 +129,29 @@ function App() {
                             switch (childKey) {
                                 case "short_term":
                                     setShortTermTracks(res.data.items);
+                                    for (var index = 0; index < 10; index++) {
+                                        let individualNum = `${index}`;
+                                        fetch(res.data.items[index].album.images[1].url)
+                                            .then((res) => res.blob())
+                                            .then((blob) => {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    console.log(individualNum);
+                                                    localStorage.setItem(`b64:${individualNum}`, reader.result);
+                                                    let img = new Image();
+                                                    img.src = reader.result;
+                                                    let tempImgs = images;
+                                                    tempImgs.push(img);
+                                                    setImages(tempImgs);
+                                                    if (images.length == 10) localStorage.setItem("imagesReady", true);
+                                                    console.log(images);
+                                                    if (individualNum === "9") {
+                                                        localStorage.setItem("base64Extracted", true);
+                                                    }
+                                                };
+                                                reader.readAsDataURL(blob);
+                                            });
+                                    }
                                     break;
                                 case "medium_term":
                                     setMediumTermTracks(res.data.items);
@@ -135,8 +173,9 @@ function App() {
                     });
             }
         }
+
         let allData = [tempData.artists.short_term, tempData.artists.medium_term, tempData.artists.long_term, tempData.tracks.short_term, tempData.tracks.medium_term, tempData.tracks.long_term];
-        while (allData.includes([])) {
+        while (allData.includes([]) || !localStorage.getItem("base64Extracted")) {
             allData = [tempData.artists.short_term, tempData.artists.medium_term, tempData.artists.long_term, tempData.tracks.short_term, tempData.tracks.medium_term, tempData.tracks.long_term];
         }
         setFetched(true);
@@ -300,31 +339,30 @@ function App() {
         let maxTextWidth = 1100;
 
         for (let i = 0; i < 10; i++) {
-            let img = document.createElement("img");
-            img.src = shortTermTracks[i].album.images[1].url;
-
             ctx.fillStyle = "#042230";
             ctx.roundRect(135, i * imageSize + 20 * (i + 1) - 5, imageSize + 10, imageSize + 10, 5).fill();
-            // ctx.fillRect(137.5, i * imageSize + 20 * (i + 1) - 2.5, imageSize + 5, imageSize + 5);
 
+            let img = images[i];
             ctx.drawImage(img, 140, i * imageSize + 20 * (i + 1), imageSize, imageSize);
+
             ctx.fillStyle = "#000000";
 
+            ctx.drawImage(icons[0], 355, i * imageSize + 20 * (i + 1) + imageSize / 2 + -87, 45, 45);
+            ctx.drawImage(icons[1], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + -25, 45, 45);
+            ctx.drawImage(icons[2], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + 37, 45, 45);
+
+            // number
             ctx.font = "normal normal 600 80px Montserrat";
             let x = 45;
-            if (i == 0 || i == 9) {
-                if (i == 0) x += 10;
-                else if (i == 9) x -= 15;
+            if (i === 0 || i === 9) {
+                if (i === 0) x += 10;
+                else if (i === 9) x -= 15;
                 ctx.fillText(`${i + 1}`, x, i * imageSize + 20 * (i + 1) + imageSize / 2 + 30);
             } else {
                 ctx.fillText(`${i + 1}`, x, i * imageSize + 20 * (i + 1) + imageSize / 2 + 30);
             }
 
-            let songIcon = document.createElement("img");
-            songIcon.src = "/icons/song.png";
-
-            ctx.drawImage(songIcon, 355, i * imageSize + 20 * (i + 1) + imageSize / 2 + -87, 45, 45);
-
+            // song name
             ctx.font = "normal normal 500 45px Montserrat";
             let text = `${shortTermTracks[i].name}`;
             let textWidth = ctx.measureText(text).width;
@@ -336,11 +374,7 @@ function App() {
 
             ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + -50);
 
-            let artistIcon = document.createElement("img");
-            artistIcon.src = "/icons/person.png";
-
-            ctx.drawImage(artistIcon, 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + -25, 45, 45);
-
+            // artist name
             ctx.font = "normal normal 600 45px Montserrat";
             text = `${shortTermTracks[i].artists[0].name}`;
             textWidth = ctx.measureText(text).width;
@@ -351,11 +385,7 @@ function App() {
             }
             ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + 12);
 
-            let albumIcon = document.createElement("img");
-            albumIcon.src = "/icons/disc.png";
-
-            ctx.drawImage(albumIcon, 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + 37, 45, 45);
-
+            // album name
             ctx.font = "normal normal 800 45px Montserrat"; // set font
             text = `${shortTermTracks[i].album.name}`; // set text to be displayed
             textWidth = ctx.measureText(text).width; // measure text width
@@ -369,7 +399,15 @@ function App() {
             ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + 75);
         }
 
+        ctx.font = "normal normal 800 45px Montserrat"; // set font
         ctx.fillText("oliverbryan.com :)", 1055, 2200);
+
+        var link = document.createElement("a");
+        link.download = "month.png";
+        link.href = canvas.toDataURL();
+        // link.click();
+
+        document.getElementById("canvasDisplay").src = canvas.toDataURL();
     };
 
     return (
@@ -388,12 +426,15 @@ function App() {
             <br />
             <br />
 
-            <button className="generateButton transition-0-1ms" onClick={GenerateImage}>
-                Generate Image
-            </button>
+            {localStorage.getItem("imagesReady") ? (
+                <button className="generateButton transition-0-1ms" onClick={GenerateImage}>
+                    Generate Image
+                </button>
+            ) : null}
             <br />
             <br />
             <canvas ref={canvasRef} id={"canvas"} />
+            <img id="canvasDisplay" src="" />
         </div>
     );
 }
