@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import axios from "axios";
 import Loading from "./Loading";
 
@@ -11,7 +11,6 @@ const SCOPES_URI_PARAM = SCOPES.join("%20"); // connect scopes with spaces for u
 const getParams = (hash) => {
     const paramsStr = hash.substring(1).split("&");
     const params = paramsStr.reduce((accumulator, currentValue) => {
-        console.log(currentValue);
         const [key, value] = currentValue.split("=");
         accumulator[key] = value;
         return accumulator;
@@ -59,9 +58,7 @@ function App() {
                         Authorization: "Bearer " + localStorage.getItem("access_token"),
                     },
                 })
-                .then((res) => {
-                    console.log(res);
-                })
+                .then((res) => {})
                 .catch((err) => {
                     console.log(err);
                     if (err.code === "ERR_BAD_REQUEST") {
@@ -270,6 +267,111 @@ function App() {
         }
     };
 
+    const canvasRef = useRef(null);
+
+    useEffect(() => {
+        if (shortTermTracks.length > 0) {
+            // GenerateImage();
+        }
+    }, [shortTermTracks]);
+
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+    };
+
+    const GenerateImage = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        ctx.canvas.width = 1500;
+        ctx.canvas.height = 2220;
+
+        ctx.fillStyle = "#c1d1d9";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let imageSize = 200;
+        let maxTextWidth = 1100;
+
+        for (let i = 0; i < 10; i++) {
+            let img = document.createElement("img");
+            img.src = shortTermTracks[i].album.images[1].url;
+
+            ctx.fillStyle = "#042230";
+            ctx.roundRect(135, i * imageSize + 20 * (i + 1) - 5, imageSize + 10, imageSize + 10, 5).fill();
+            // ctx.fillRect(137.5, i * imageSize + 20 * (i + 1) - 2.5, imageSize + 5, imageSize + 5);
+
+            ctx.drawImage(img, 140, i * imageSize + 20 * (i + 1), imageSize, imageSize);
+            ctx.fillStyle = "#000000";
+
+            ctx.font = "normal normal 600 80px Montserrat";
+            let x = 45;
+            if (i == 0 || i == 9) {
+                if (i == 0) x += 10;
+                else if (i == 9) x -= 15;
+                ctx.fillText(`${i + 1}`, x, i * imageSize + 20 * (i + 1) + imageSize / 2 + 30);
+            } else {
+                ctx.fillText(`${i + 1}`, x, i * imageSize + 20 * (i + 1) + imageSize / 2 + 30);
+            }
+
+            let songIcon = document.createElement("img");
+            songIcon.src = "/icons/song.png";
+
+            ctx.drawImage(songIcon, 355, i * imageSize + 20 * (i + 1) + imageSize / 2 + -87, 45, 45);
+
+            ctx.font = "normal normal 500 45px Montserrat";
+            let text = `${shortTermTracks[i].name}`;
+            let textWidth = ctx.measureText(text).width;
+            while (textWidth > maxTextWidth) {
+                let textArr = text.split(" ");
+                text = textArr.slice(0, textArr.length - 1).join(" ");
+                textWidth = ctx.measureText(text).width;
+            }
+
+            ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + -50);
+
+            let artistIcon = document.createElement("img");
+            artistIcon.src = "/icons/person.png";
+
+            ctx.drawImage(artistIcon, 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + -25, 45, 45);
+
+            ctx.font = "normal normal 600 45px Montserrat";
+            text = `${shortTermTracks[i].artists[0].name}`;
+            textWidth = ctx.measureText(text).width;
+            while (textWidth > maxTextWidth) {
+                let textArr = text.split(" ");
+                text = textArr.slice(0, textArr.length - 1).join(" ");
+                textWidth = ctx.measureText(text).width;
+            }
+            ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + 12);
+
+            let albumIcon = document.createElement("img");
+            albumIcon.src = "/icons/disc.png";
+
+            ctx.drawImage(albumIcon, 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + 37, 45, 45);
+
+            ctx.font = "normal normal 800 45px Montserrat"; // set font
+            text = `${shortTermTracks[i].album.name}`; // set text to be displayed
+            textWidth = ctx.measureText(text).width; // measure text width
+            while (textWidth > maxTextWidth) {
+                // while the text is wider than the maximum width
+                let textArr = text.split(" "); // split the text into an array of words
+                text = textArr.slice(0, textArr.length - 1).join(" ");
+                textWidth = ctx.measureText(text).width;
+            }
+
+            ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + 75);
+        }
+
+        ctx.fillText("oliverbryan.com :)", 1055, 2200);
+    };
+
     return (
         <div className="App">
             <header className="App-header noselect">
@@ -283,6 +385,15 @@ function App() {
                 ) : null}
                 <List />
             </div>
+            <br />
+            <br />
+
+            <button className="generateButton transition-0-1ms" onClick={GenerateImage}>
+                Generate Image
+            </button>
+            <br />
+            <br />
+            <canvas ref={canvasRef} id={"canvas"} />
         </div>
     );
 }
