@@ -40,9 +40,8 @@ function App() {
     const [icons, setIcons] = useState([]);
     const [imagesReady, setImagesReady] = useState(null);
 
-    const [imageBG, setImageBG] = useState("#d6d6d6");
-    const [imageFG, setImageFG] = useState("#000000");
-    const [imageBorderColour, setImageBorderColour] = useState("#000000");
+    const [imageBG, setImageBG] = useState("#1b1b1b");
+    const [imageFG, setImageFG] = useState("#ffffff");
 
     useEffect(() => {
         if (window.location.hash) {
@@ -330,10 +329,6 @@ function App() {
         setImageFG(colour);
         GenerateImage({ fgColour: colour });
     };
-    const onBorderColourChange = (colour) => {
-        setImageBorderColour(colour);
-        GenerateImage({ imageBorderColour: colour });
-    };
 
     const hexToRGB = (hex) => {
         var long = parseInt(hex.replace(/^#/, ""), 16);
@@ -348,16 +343,17 @@ function App() {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         ctx.canvas.width = 1500;
-        ctx.canvas.height = 2350;
+        ctx.canvas.height = 2220;
 
         ctx.fillStyle = typeof options.bgColour === "string" ? options.bgColour : imageBG;
         ctx.roundRect(0, 0, canvas.width, canvas.height, 30).fill();
         // ctx.fillRect(0, 0, canvas.width, canvas.height);
         let imageSize = 200;
         let maxTextWidth = 1070;
+        let fontFamily = "Montserrat";
 
         for (let i = 0; i < 10; i++) {
-            ctx.fillStyle = typeof options.imageBorderColour === "string" ? options.imageBorderColour : imageBorderColour;
+            ctx.fillStyle = typeof options.fgColour === "string" ? options.fgColour : imageFG;
             ctx.roundRect(135, i * imageSize + 20 * (i + 1) - 5, imageSize + 10, imageSize + 10, 5).fill();
 
             let img = images.find((image) => image.id === i);
@@ -370,6 +366,7 @@ function App() {
                 { x: 358, y: -25 },
                 { x: 358, y: 37 },
             ];
+
             for (let z = 0; z < icons.length; z++) {
                 let iconSize = 45;
                 let iconCanvas = document.createElement("canvas");
@@ -398,12 +395,9 @@ function App() {
 
                 ctx.drawImage(iconCanvas, offsets[z].x, i * imageSize + 20 * (i + 1) + imageSize / 2 + offsets[z].y, iconSize, iconSize);
             }
-            // ctx.drawImage(icons[0], 355, i * imageSize + 20 * (i + 1) + imageSize / 2 + -87, 45, 45);
-            // ctx.drawImage(icons[1], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + -25, 45, 45);
-            // ctx.drawImage(icons[2], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + 37, 45, 45);
 
             // number
-            ctx.font = "normal normal 600 80px Montserrat";
+            ctx.font = `normal normal 500 80px ${fontFamily}`;
             let x = 45;
             if (i === 0 || i === 9) {
                 if (i === 0) x += 10;
@@ -414,7 +408,7 @@ function App() {
             }
 
             // song name
-            ctx.font = "normal normal 500 45px Montserrat";
+            ctx.font = `normal normal 500 45px ${fontFamily}`;
             let text = `${shortTermTracks[i].name}`;
             let textWidth = ctx.measureText(text).width;
             while (textWidth > maxTextWidth) {
@@ -426,7 +420,7 @@ function App() {
             ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + -50);
 
             // artist name
-            ctx.font = "normal normal 600 45px Montserrat";
+            ctx.font = `normal normal 600 45px ${fontFamily}`;
             text = `${shortTermTracks[i].artists[0].name}`;
             textWidth = ctx.measureText(text).width;
             while (textWidth > maxTextWidth) {
@@ -437,7 +431,7 @@ function App() {
             ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + 12);
 
             // album name
-            ctx.font = "normal normal 800 45px Montserrat"; // set font
+            ctx.font = `normal normal 700 45px ${fontFamily}`; // set font
             text = `${shortTermTracks[i].album.name}`; // set text to be displayed
             textWidth = ctx.measureText(text).width; // measure text width
             while (textWidth > maxTextWidth) {
@@ -450,8 +444,8 @@ function App() {
             ctx.fillText(text, 420, i * imageSize + 20 * (i + 1) + imageSize / 2 + 75);
         }
 
-        ctx.font = "normal normal 800 80px Montserrat"; // set font
-        let txt = "oliverbryan.com :)";
+        ctx.font = `normal normal 700 80px ${fontFamily}`; // set font
+        let txt = "oliverbryan.com";
         ctx.fillText(txt, ctx.canvas.width / 2 - ctx.measureText(txt).width / 2, 2305);
 
         setShowCanvas(true);
@@ -504,25 +498,17 @@ function App() {
                 <div id="imageControls">
                     <div className="picker">
                         <h1>Background Colour</h1>
-                        <ColourPicker onChange={onBGColourChange} />
+                        <ColourPicker onChange={onBGColourChange} defaultColour={imageBG} />
                     </div>
                     <div className="picker">
                         <h1>Foreground Colour</h1>
-                        <ColourPicker onChange={onFGColourChange} />
+                        <ColourPicker onChange={onFGColourChange} defaultColour={imageFG} />
                     </div>
-                    <div className="picker">
-                        <h1>Cover Border Colour</h1>
-                        <ColourPicker onChange={onBorderColourChange} />
-                    </div>
-                </div>
-            </div>
-            {imagesReady && showCanvas ? (
-                <>
                     <button className="downloadButton transition-0-1ms" onClick={DownloadImage}>
                         Download Image
                     </button>
-                </>
-            ) : null}
+                </div>
+            </div>
             <div className="Main">
                 {!localStorage.getItem("access_token") ? (
                     <button className="loginButton transition-0-1ms" onClick={handleLogin}>

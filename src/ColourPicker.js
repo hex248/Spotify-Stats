@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import ReactColorPicker from "@super-effective/react-color-picker";
 
-const ColourPicker = ({ onChange }) => {
-    const [colour, setColour] = useState("#d6d6d6");
+const ColourPicker = ({ onChange, defaultColour }) => {
+    const [colour, setColour] = useState(defaultColour);
 
     const changeColour = (newColour) => {
         setColour(newColour);
