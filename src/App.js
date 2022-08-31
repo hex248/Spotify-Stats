@@ -2,6 +2,7 @@ import "./App.css";
 import React, { useRef, useEffect, useState } from "react";
 import axios from "axios";
 import Loading from "./Loading";
+import ColourPicker from "./ColourPicker";
 
 const CLIENT_ID = "b6183ff3b0984b71afeade1c61ce9b9f";
 const SPOTIFY_AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
@@ -38,6 +39,10 @@ function App() {
     const [images, setImages] = useState([]);
     const [icons, setIcons] = useState([]);
     const [imagesReady, setImagesReady] = useState(null);
+
+    const [imageBG, setImageBG] = useState("#d6d6d6");
+    const [imageFG, setImageFG] = useState("#000000");
+    const [imageBorderColour, setImageBorderColour] = useState("#000000");
 
     useEffect(() => {
         if (window.location.hash) {
@@ -304,12 +309,6 @@ function App() {
 
     const canvasRef = useRef(null);
 
-    useEffect(() => {
-        if (shortTermTracks.length > 0) {
-            // GenerateImage();
-        }
-    }, [shortTermTracks]);
-
     CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
         if (w < 2 * r) r = w / 2;
         if (h < 2 * r) r = h / 2;
@@ -323,30 +322,85 @@ function App() {
         return this;
     };
 
-    const GenerateImage = () => {
+    const onBGColourChange = (colour) => {
+        setImageBG(colour);
+        GenerateImage({ bgColour: colour });
+    };
+    const onFGColourChange = (colour) => {
+        setImageFG(colour);
+        GenerateImage({ fgColour: colour });
+    };
+    const onBorderColourChange = (colour) => {
+        setImageBorderColour(colour);
+        GenerateImage({ imageBorderColour: colour });
+    };
+
+    const hexToRGB = (hex) => {
+        var long = parseInt(hex.replace(/^#/, ""), 16);
+        return {
+            R: (long >>> 16) & 0xff,
+            G: (long >>> 8) & 0xff,
+            B: long & 0xff,
+        };
+    };
+
+    const GenerateImage = (options) => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
         ctx.canvas.width = 1500;
         ctx.canvas.height = 2350;
 
-        ctx.fillStyle = "#C3B1E1";
+        ctx.fillStyle = typeof options.bgColour === "string" ? options.bgColour : imageBG;
         ctx.roundRect(0, 0, canvas.width, canvas.height, 30).fill();
         // ctx.fillRect(0, 0, canvas.width, canvas.height);
         let imageSize = 200;
         let maxTextWidth = 1070;
 
         for (let i = 0; i < 10; i++) {
-            ctx.fillStyle = "#042230";
+            ctx.fillStyle = typeof options.imageBorderColour === "string" ? options.imageBorderColour : imageBorderColour;
             ctx.roundRect(135, i * imageSize + 20 * (i + 1) - 5, imageSize + 10, imageSize + 10, 5).fill();
 
             let img = images.find((image) => image.id === i);
             ctx.drawImage(img.img, 140, i * imageSize + 20 * (i + 1), imageSize, imageSize);
 
-            ctx.fillStyle = "#000000";
+            ctx.fillStyle = typeof options.fgColour === "string" ? options.fgColour : imageFG;
 
-            ctx.drawImage(icons[0], 355, i * imageSize + 20 * (i + 1) + imageSize / 2 + -87, 45, 45);
-            ctx.drawImage(icons[1], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + -25, 45, 45);
-            ctx.drawImage(icons[2], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + 37, 45, 45);
+            let offsets = [
+                { x: 355, y: -87 },
+                { x: 358, y: -25 },
+                { x: 358, y: 37 },
+            ];
+            for (let z = 0; z < icons.length; z++) {
+                let iconSize = 45;
+                let iconCanvas = document.createElement("canvas");
+                let iconCtx = iconCanvas.getContext("2d");
+                iconCanvas.width = iconSize;
+                iconCanvas.height = iconSize;
+
+                iconCtx.drawImage(icons[z], 0, 0, iconSize, iconSize);
+                let originalPixels = iconCtx.getImageData(0, 0, iconSize, iconSize);
+                let newPixels = iconCtx.getImageData(0, 0, iconSize, iconSize);
+
+                let hexCode = typeof options.fgColour === "string" ? options.fgColour : imageFG;
+                let newColour = hexToRGB(typeof options.fgColour === "string" ? options.fgColour : imageFG);
+                console.log(hexCode);
+                console.log(newColour);
+
+                for (let x = 0; x < originalPixels.data.length; x += 4) {
+                    if (newPixels.data[x + 3] > 0) {
+                        newPixels.data[x] = newColour.R;
+                        newPixels.data[x + 1] = newColour.G;
+                        newPixels.data[x + 2] = newColour.B;
+                    }
+                }
+                console.log(originalPixels);
+                iconCtx.putImageData(newPixels, 0, 0);
+
+                ctx.drawImage(iconCanvas, offsets[z].x, i * imageSize + 20 * (i + 1) + imageSize / 2 + offsets[z].y, iconSize, iconSize);
+            }
+            // ctx.drawImage(icons[0], 355, i * imageSize + 20 * (i + 1) + imageSize / 2 + -87, 45, 45);
+            // ctx.drawImage(icons[1], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + -25, 45, 45);
+            // ctx.drawImage(icons[2], 358, i * imageSize + 20 * (i + 1) + imageSize / 2 + 37, 45, 45);
 
             // number
             ctx.font = "normal normal 600 80px Montserrat";
@@ -400,20 +454,30 @@ function App() {
         let txt = "oliverbryan.com :)";
         ctx.fillText(txt, ctx.canvas.width / 2 - ctx.measureText(txt).width / 2, 2305);
 
-        var link = document.createElement("a");
-        link.download = "month.png";
-        link.href = canvas.toDataURL();
-        // link.click();
-
         setShowCanvas(true);
         document.getElementById("canvasDisplay").src = canvas.toDataURL();
+
+        document.getElementById("imageContainer").style.removeProperty("display");
     };
 
     const [showCanvas, setShowCanvas] = useState(null);
 
     const HideImage = () => {
         setShowCanvas(false);
-        document.getElementById("canvasDisplay").src = "";
+
+        document.getElementById("imageContainer").style.setProperty("display", "none");
+    };
+
+    useEffect(() => {
+        document.getElementById("imageContainer").style.setProperty("display", "none");
+    }, []);
+    const DownloadImage = () => {
+        const canvas = canvasRef.current;
+
+        const a = document.createElement("a");
+        a.download = "top10month.png";
+        a.href = canvas.toDataURL("image/png");
+        a.click();
     };
 
     return (
@@ -434,10 +498,31 @@ function App() {
             ) : null}
             <br />
             <br />
-            <div className="imageContainer">
-                <canvas ref={canvasRef} id={"canvas"} />
-                <img id="canvasDisplay" src="" />
+            <canvas ref={canvasRef} id={"canvas"} />
+            <div id="imageContainer">
+                <img id="canvasDisplay" src="" alt="" />
+                <div id="imageControls">
+                    <div className="picker">
+                        <h1>Background Colour</h1>
+                        <ColourPicker onChange={onBGColourChange} />
+                    </div>
+                    <div className="picker">
+                        <h1>Foreground Colour</h1>
+                        <ColourPicker onChange={onFGColourChange} />
+                    </div>
+                    <div className="picker">
+                        <h1>Cover Border Colour</h1>
+                        <ColourPicker onChange={onBorderColourChange} />
+                    </div>
+                </div>
             </div>
+            {imagesReady && showCanvas ? (
+                <>
+                    <button className="downloadButton transition-0-1ms" onClick={DownloadImage}>
+                        Download Image
+                    </button>
+                </>
+            ) : null}
             <div className="Main">
                 {!localStorage.getItem("access_token") ? (
                     <button className="loginButton transition-0-1ms" onClick={handleLogin}>
