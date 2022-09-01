@@ -216,6 +216,11 @@ body {
     flex-direction: row;
     flex-wrap: wrap;
     margin-bottom: 20px;
+    overflow: hidden;
+    -moz-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    -webkit-transition: 0.3s ease-in-out;
+    transition: 0.3s ease-in-out;
 }
 
 #imageControls {
@@ -326,14 +331,21 @@ canvas {
     border: 0px double var(--foreground-color);
 }
 
-.transition-0-3ms {
-    -moz-transition: all var(--fade-time) ease-in;
-    -o-transition: all var(--fade-time) ease-in;
-    -webkit-transition: all var(--fade-time) ease-in;
-    transition: all var(--fade-time) ease-in;
+.transition-1s {
+    -moz-transition: all 1s ease-in;
+    -o-transition: all 1s ease-in;
+    -webkit-transition: 1s ease-in;
+    transition: all 1s ease-in;
 }
 
-.transition-0-1ms {
+.transition-0-3s {
+    -moz-transition: all 0.3s ease-in;
+    -o-transition: all 0.3s ease-in;
+    -webkit-transition: all 0.3s ease-in;
+    transition: all 0.3s ease-in;
+}
+
+.transition-0-1s {
     -moz-transition: all 0.1s ease-in;
     -o-transition: all 0.1s ease-in;
     -webkit-transition: all 0.1s ease-in;

@@ -210,21 +210,21 @@ function App() {
         return (
             <div className="buttons">
                 <div className="buttonContainer">
-                    <button onClick={changeCategory} className="selection transition-0-3ms">
+                    <button onClick={changeCategory} className="selection transition-0-3s">
                         Tracks
                     </button>
-                    <button onClick={changeCategory} className="selection transition-0-3ms">
+                    <button onClick={changeCategory} className="selection transition-0-3s">
                         Artists
                     </button>
                 </div>
                 <div className="buttonContainer">
-                    <button onClick={changeCategory} className="selection transition-0-3ms">
+                    <button onClick={changeCategory} className="selection transition-0-3s">
                         Last month
                     </button>
-                    <button onClick={changeCategory} className="selection transition-0-3ms">
+                    <button onClick={changeCategory} className="selection transition-0-3s">
                         Last 6 months
                     </button>
-                    <button onClick={changeCategory} className="selection transition-0-3ms">
+                    <button onClick={changeCategory} className="selection transition-0-3s">
                         All time
                     </button>
                 </div>
@@ -258,9 +258,9 @@ function App() {
                         <CategorySelection />
                         <div className="container">
                             {list.map((artist, i) => (
-                                <div className="artist transition-0-3ms" key={i + artist.name}>
-                                    <img src={artist.images[1].url} className="artistImg transition-0-3ms" alt={""} />
-                                    <a href={artist.external_urls.spotify} className="link transition-0-3ms" target="_blank" rel="noreferrer">
+                                <div className="artist transition-0-3s" key={i + artist.name}>
+                                    <img src={artist.images[1].url} className="artistImg transition-0-3s" alt={""} />
+                                    <a href={artist.external_urls.spotify} className="link transition-0-3s" target="_blank" rel="noreferrer">
                                         {i + 1}. {artist.name}
                                         <br />
                                     </a>
@@ -289,10 +289,10 @@ function App() {
                         <CategorySelection />
                         <div className="container">
                             {list.map((track, i) => (
-                                <div className="track transition-0-3ms" key={i + track.name + " - " + track.artists[0].name}>
-                                    <img src={track.album.images[1].url} className="trackImg transition-0-3ms" alt={""} />
+                                <div className="track transition-0-3s" key={i + track.name + " - " + track.artists[0].name}>
+                                    <img src={track.album.images[1].url} className="trackImg transition-0-3s" alt={""} />
 
-                                    <a href={track.external_urls.spotify} className="link transition-0-3ms" target="_blank" rel="noreferrer">
+                                    <a href={track.external_urls.spotify} className="link transition-0-3s" target="_blank" rel="noreferrer">
                                         {i + 1}. {track.name} - {track.artists[0].name}
                                     </a>
                                 </div>
@@ -452,6 +452,7 @@ function App() {
         document.getElementById("canvasDisplay").src = canvas.toDataURL();
 
         document.getElementById("imageContainer").style.removeProperty("display");
+        document.getElementById("imageContainer").style.setProperty("max-height", "1000px");
     };
 
     const [showCanvas, setShowCanvas] = useState(null);
@@ -459,11 +460,13 @@ function App() {
     const HideImage = () => {
         setShowCanvas(false);
 
-        document.getElementById("imageContainer").style.setProperty("display", "none");
+        // document.getElementById("imageContainer").style.setProperty("display", "none");
+        document.getElementById("imageContainer").style.setProperty("max-height", "0px");
     };
 
     useEffect(() => {
-        document.getElementById("imageContainer").style.setProperty("display", "none");
+        document.getElementById("imageContainer").style.setProperty("max-height", "0px");
+        // document.getElementById("imageContainer").style.setProperty("display", "none");
     }, []);
     const DownloadImage = () => {
         const canvas = canvasRef.current;
@@ -480,13 +483,13 @@ function App() {
                 <h1>Spotify Stats</h1>
             </header>
             {imagesReady && !showCanvas ? (
-                <button className="generateButton transition-0-1ms" onClick={GenerateImage}>
+                <button className="generateButton transition-0-1s" onClick={GenerateImage}>
                     Show Image
                 </button>
             ) : null}
 
             {imagesReady && showCanvas ? (
-                <button className="hideButton transition-0-1ms" onClick={HideImage}>
+                <button className="hideButton transition-0-1s" onClick={HideImage}>
                     Hide Image
                 </button>
             ) : null}
@@ -504,14 +507,14 @@ function App() {
                         <h1>Foreground Colour</h1>
                         <ColourPicker onChange={onFGColourChange} defaultColour={imageFG} />
                     </div>
-                    <button className="downloadButton transition-0-1ms" onClick={DownloadImage}>
+                    <button className="downloadButton transition-0-1s" onClick={DownloadImage}>
                         Download Image
                     </button>
                 </div>
             </div>
             <div className="Main">
                 {!localStorage.getItem("access_token") ? (
-                    <button className="loginButton transition-0-1ms" onClick={handleLogin}>
+                    <button className="loginButton transition-0-1s" onClick={handleLogin}>
                         Login
                     </button>
                 ) : null}
